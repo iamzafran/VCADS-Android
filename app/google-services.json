@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "557565261889",
+    "firebase_url": "https://vcads-47a3a.firebaseio.com",
+    "project_id": "vcads-47a3a",
+    "storage_bucket": "vcads-47a3a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557565261889:android:d1cd00a9d9283658",
+        "android_client_info": {
+          "package_name": "com.vcads.vcads"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557565261889-1tk8ek3llrec0b1b2p3gdoropc5it99s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeP8l6c-ar5QeAhUgCX85Kz_wTM_gxsmY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
