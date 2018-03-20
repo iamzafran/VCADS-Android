@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -61,6 +62,7 @@ public class VehicleListFragment extends Fragment {
     private static final String TAG = VehicleListFragment.class.getSimpleName();
     private static final int REQUEST_VEHICLE_CONFIRMATION = 0;
     private static final String VEHICLE_KEY_DIALOG = "VEHICLE_KEY_DIALOG";
+    private String mCurrentActiveVehicle;
 
 
     private List<Vehicle> mVehicleList = new ArrayList<>();
@@ -75,6 +77,8 @@ public class VehicleListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
+
+        mCurrentActiveVehicle = VCADSSHaredPreferences.getLicensePlate(getActivity());
     }
 
     @Nullable
@@ -264,19 +268,40 @@ public class VehicleListFragment extends Fragment {
             mVehicleModelTextView.setText(text);
             mLicensePlateTextView.setText(mVehicle.getLicensePlate());
 
+            Log.v(TAG, "Is active"+mVehicle.isActive()+"");
+
             mActivateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     FragmentManager fm = getFragmentManager();
-                    VehicleKeyDialogFragment dialog = VehicleKeyDialogFragment.newInstance(mVehicle);
-                    dialog.setTargetFragment(VehicleListFragment.this, REQUEST_VEHICLE_CONFIRMATION);
-                    dialog.show(fm, VEHICLE_KEY_DIALOG);
+
+                    Log.v(TAG, mVehicle.isActive()+"is active");
+                    if(!mVehicle.isActive()){
+                        VehicleKeyDialogFragment dialog = VehicleKeyDialogFragment.newInstance(mVehicle);
+                        dialog.setTargetFragment(VehicleListFragment.this, REQUEST_VEHICLE_CONFIRMATION);
+                        dialog.show(fm, VEHICLE_KEY_DIALOG);
+
+                    }else if(mVehicle.isActive()){
+                        mActivateButton.setText(R.string.activate);
+                        VCADSSHaredPreferences.setPrefLicensePlate(getActivity(), null);
+                        mVehicle.setActive(false);
+                    }
 
                 }
             });
 
+            if(mCurrentActiveVehicle!=null){
+
+                if(mCurrentActiveVehicle.equals(mVehicle.getLicensePlate())){
+                    mVehicle.setActive(true);
+                    Log.v(TAG, "EQUALS CURRENT");
+                    mActivateButton.setText(R.string.deactivate);
+                }
+
+            }
+
             if(mVehicle.isActive()){
-                mActivateButton.setText("Deactivate");
+                mActivateButton.setText(R.string.deactivate);
             }
 
 
@@ -303,16 +328,24 @@ public class VehicleListFragment extends Fragment {
 
             Log.v(TAG, confirmed+"");
 
-            Vehicle vehicle = mVehicleHashMap.get(license_plate);
-            setIsActive(vehicle);
+            if(confirmed){
+                Vehicle vehicle = mVehicleHashMap.get(license_plate);
+                setIsActive(vehicle);
+            }else{
+                Toast.makeText(getActivity(), "Vehicle Authentication Failed", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
     private void setIsActive(Vehicle vehicle)
     {
+
         vehicle.setActive(true);
         VCADSSHaredPreferences.setPrefLicensePlate(getActivity(),vehicle.getLicensePlate().toUpperCase());
-
+        Vehicle currentVehicle = mVehicleHashMap.get(mCurrentActiveVehicle);
+        currentVehicle.setActive(false);
+        mCurrentActiveVehicle = vehicle.getLicensePlate();
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
