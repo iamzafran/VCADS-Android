@@ -19,4 +19,10 @@
     <string name="log_out">Log Out</string>
     <string name="activate">Activate</string>
     <string name="add_new_alert">Add New Alert</string>
+    <string name="alert">Alert</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="deactivate">Deactivate</string>
+    <string name="confirm_delete">Confirm delete vehicle</string>
+    <string name="collision_warning">Collision Warning</string>
+    <string name="activate_vehicle">ACTIVATE</string>
 </resources>

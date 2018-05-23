@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.vcads.vcads.Model.Vehicle;
 import com.vcads.vcads.R;
+import com.vcads.vcads.SharedPreferences.VCADSSHaredPreferences;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,11 +45,13 @@ import okhttp3.Response;
 public class VehicleKeyDialogFragment extends DialogFragment {
 
     private static final String VEHICLE_ARGS = "VEHICLE_ARGS";
+    public static final String EXTRA_KEY = "EXTRA_KEY" ;
     private Vehicle mVehicle;
     private EditText mVehicleKeyEditText;
     private String mKey;
     private DatabaseReference mDatabaseReference;
     private final static String TAG = VehicleKeyDialogFragment.class.getSimpleName();
+    private String mIPAddress;
 
     public static final String EXTRA_CONFIRMATION = "com.android.dishpatch.dishpatch.boolean";
     public static final String EXTRA_LICENSE_PLATE = "com.android.dishpatch.dishpatch.license_plate";
@@ -92,7 +96,8 @@ public class VehicleKeyDialogFragment extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
 
                         if(mKey.equals(mVehicle.getKey())){
-                            verifyVehicle();
+                            sendResult(Activity.RESULT_OK,true);
+
                         }else {
                             sendResult(Activity.RESULT_OK,false);
 
@@ -119,6 +124,7 @@ public class VehicleKeyDialogFragment extends DialogFragment {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_CONFIRMATION,isConfirmed);
         intent.putExtra(EXTRA_LICENSE_PLATE, mVehicle.getLicensePlate());
+        intent.putExtra(EXTRA_KEY, mKey);
         getTargetFragment().onActivityResult(getTargetRequestCode(),resultCode,intent);
     }
 
@@ -136,7 +142,6 @@ public class VehicleKeyDialogFragment extends DialogFragment {
 
                 }else {
                     Log.v(TAG, ip);
-                    verifyConnection(ip);
                 }
 
             }
@@ -148,41 +153,5 @@ public class VehicleKeyDialogFragment extends DialogFragment {
         });
     }
 
-    private void verifyConnection(String ip){
-        OkHttpClient client = new OkHttpClient();
-
-
-        Request request = new Request.Builder().url("http://"+ip+":8080").build();
-        Call call = client.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-
-                if(response.isSuccessful())
-                {
-                    String json = response.body().string();
-                    try {
-                        JSONObject verifyObj = new JSONObject(json);
-                        String license = verifyObj.getString("license_plate");
-
-                        if(license.equals(mVehicle.getLicensePlate().toUpperCase())){
-                            sendResult(Activity.RESULT_OK,true);
-
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
-            }
-        });
-
-    }
 
 }

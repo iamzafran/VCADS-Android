@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.vcads.vcads.Fragment.AlertFragment;
+import com.vcads.vcads.Fragment.CollisionWarningFragment;
 import com.vcads.vcads.Fragment.VehicleListFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -72,14 +73,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -172,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             // Return a PlaceholderFragment (defined as a static inner class below).
 
             if(position==0){
-                return PlaceholderFragment.newInstance(position + 1);
+                return CollisionWarningFragment.newInstance();
             }else if(position==1){
                 return AlertFragment.newInsatance();
             }else if(position==2){

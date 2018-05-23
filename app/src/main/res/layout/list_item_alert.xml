@@ -9,23 +9,36 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="3dp"
         >
 
-        <TextView
-            android:id="@+id/alert_text_view"
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/alert_icon"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:textStyle="bold"
-            tools:text="Warning!! Accident up ahead"
-            />
-        <TextView
-            android:id="@+id/distance_and_heading_text_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="2000m"/>
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/alert_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:textStyle="bold"
+                tools:text="Warning!! Accident up ahead"
+                />
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/distance_and_heading_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="2000m"/>
+        </LinearLayout>
+
+
 
 
 

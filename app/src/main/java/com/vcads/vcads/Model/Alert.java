@@ -3,18 +3,24 @@ package com.vcads.vcads.Model;
 
 import com.firebase.geofire.GeoLocation;
 
+import java.io.Serializable;
+
 /**
  * Created by Zaly on 3/14/2018.
  */
 
-public class Alert {
+public class Alert implements Serializable {
     private String type;
-    private GeoLocation mLocation;
+    private String mAlertId;
+    private double mLatitude;
+    private double mLongitude;
     private float mDistance;
-    public Alert(String type, GeoLocation location, float distance) {
+    public Alert(String type, GeoLocation location, float distance, String alertId) {
         this.type = type;
-        mLocation = location;
+        mLatitude = location.latitude;
+        mLongitude = location.longitude;
         mDistance = distance;
+        mAlertId = alertId;
     }
 
     public String getType() {
@@ -25,19 +31,37 @@ public class Alert {
         this.type = type;
     }
 
-    public GeoLocation getLocation() {
-        return mLocation;
-    }
-
-    public void setLocation(GeoLocation location) {
-        mLocation = location;
-    }
-
     public float getDistance() {
         return mDistance;
     }
 
     public void setDistance(float distance) {
         this.mDistance = distance;
+    }
+
+    public double getLatitude() {
+        return mLatitude;
+    }
+
+    public void setLatitude(double latitude) {
+        mLatitude = latitude;
+    }
+
+
+
+    public double getLongitude() {
+        return mLongitude;
+    }
+
+    public void setLongitude(double longitude) {
+        mLongitude = longitude;
+    }
+
+    public String getAlertId() {
+        return mAlertId;
+    }
+
+    public void setAlertId(String alertId) {
+        mAlertId = alertId;
     }
 }

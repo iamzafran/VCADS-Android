@@ -1,6 +1,7 @@
 package com.vcads.vcads.Fragment;
 
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.print.PageRange;
@@ -20,17 +21,25 @@ import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.vcads.vcads.AlertMapActivity;
 import com.vcads.vcads.Model.Alert;
 import com.vcads.vcads.R;
 import com.vcads.vcads.SharedPreferences.VCADSSHaredPreferences;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Array;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +64,68 @@ public class AlertFragment extends Fragment {
     private GeoLocation mGeoLocation;
     private GeoQuery mGeoQuery;
 
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket("http://192.168.0.187:8080");
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "URI Syntax Exception ", e);
+        }
+    }
+
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.v(TAG, (String) args[0]);
+        }
+    };
+
+    private Emitter.Listener onNewWarning = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject alertObject = (JSONObject) args[0];
+            Log.v(TAG, alertObject.toString());
+            try {
+            double latitude = alertObject.getDouble("latitude");
+            double longitude = alertObject.getDouble("longitude");
+            double distance = alertObject.getDouble("distance");
+            String key = null;
+            Alert alert = new Alert("Accident", new GeoLocation(latitude, longitude), (float) distance, key);
+            key = alertObject.getString("key");
+            alert.setAlertId(key);
+
+            for(Alert a: mAlertList){
+
+                if(a.getAlertId().equals(key)){
+                    return;
+                }
+            }
+            mAlertList.add(0,alert);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(mAlertListRecyclerView.getAdapter()!=null){
+                        mAlertListRecyclerView.getAdapter().notifyDataSetChanged();
+                    }
+
+                }
+            });
+        }
+    };
+
     private static final String TAG = AlertFragment.class.getSimpleName();
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mSocket.on("news", onConnect);
+        mSocket.on("new_warning", onNewWarning);
+        mSocket.connect();
+    }
 
     @Nullable
     @Override
@@ -72,7 +142,7 @@ public class AlertFragment extends Fragment {
             mAlertListAdapter = new AlertListAdapter();
             mAlertListRecyclerView.setAdapter(mAlertListAdapter);
 
-            bindGeoFire();
+            //bindGeoFire();
 
         }else {
 
@@ -95,7 +165,10 @@ public class AlertFragment extends Fragment {
         mMyLocationReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.v(TAG, dataSnapshot.getValue().toString());
+
+                if(dataSnapshot.getValue()==null){
+                    return;
+                }
                 double latitude = (double) dataSnapshot.child("0").getValue();
                 double longitude = (double) dataSnapshot.child("1").getValue();
                 mGeoLocation = new GeoLocation(latitude, longitude);
@@ -111,14 +184,20 @@ public class AlertFragment extends Fragment {
                             float[] distance = new float[2];
                             Location.distanceBetween(mGeoQuery.getCenter().latitude, mGeoQuery.getCenter().longitude, location.latitude, location.longitude, distance);
                             Log.v(TAG, key+" distance: "+ distance[0]+"m");
-                            Alert a = new Alert("Accident", location, distance[0]);
+                            Alert a = new Alert("Accident", location, distance[0], key);
                             mAlertList.add(0,a);
                             mAlertListRecyclerView.getAdapter().notifyItemChanged(0);
                         }
 
                         @Override
                         public void onKeyExited(String key) {
+                            for(Alert a: mAlertList){
 
+                                if(a.getAlertId().equals(key)){
+                                    mAlertList.remove(a);
+                                }
+
+                            }
                         }
 
                         @Override
@@ -138,7 +217,11 @@ public class AlertFragment extends Fragment {
                     });
 
                 }else {
+
+
                     mGeoQuery.setCenter(mGeoLocation);
+                    updateLocation();
+                    mAlertListRecyclerView.getAdapter().notifyDataSetChanged();
                 }
 
             }
@@ -147,9 +230,23 @@ public class AlertFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
+
+            private void updateLocation(){
+
+                for(Alert a: mAlertList){
+                    float[] distance = new float[2];
+                    Location.distanceBetween(mGeoQuery.getCenter().latitude, mGeoQuery.getCenter().longitude, a.getLatitude(), a.getLongitude(), distance);
+                    a.setDistance(distance[0]);
+                }
+
+            }
         });
 
 
+
+    }
+
+    private void getWarnings(){
 
     }
 
@@ -208,6 +305,8 @@ public class AlertFragment extends Fragment {
         @Override
         public void onClick(View v) {
 
+            Intent i = AlertMapActivity.newIntent(getActivity(), mAlert);
+            startActivity(i);
 
         }
     }

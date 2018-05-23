@@ -1,5 +1,6 @@
 package com.vcads.vcads.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.vcads.vcads.LogInActivity;
 import com.vcads.vcads.R;
 
 import org.json.JSONException;
@@ -208,6 +210,8 @@ public class RegisterFragment extends Fragment {
                         Log.v(TAG,"OK");
                         Log.v(TAG,responseStr);
                         if(responseStr.equals("Ok")){
+                            Intent i = LogInActivity.newIntent(getActivity());
+                            startActivity(i);
                             getActivity().finish();
                         }
 
